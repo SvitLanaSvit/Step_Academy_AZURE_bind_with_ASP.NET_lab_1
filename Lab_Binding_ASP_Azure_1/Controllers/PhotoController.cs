@@ -12,11 +12,16 @@ namespace Lab_Binding_ASP_Azure_1.Controllers
     {
         private readonly PhotoContext context;
         private readonly BlobServiceClient blobServiceClient;
+        private readonly IConfiguration configuration;
+        private readonly string containerName;
 
-        public PhotoController(PhotoContext context, BlobServiceClient blobServiceClient)
+        public PhotoController(PhotoContext context, BlobServiceClient blobServiceClient,
+            IConfiguration configuration)
         {
             this.context = context;
             this.blobServiceClient = blobServiceClient;
+            this.configuration = configuration;
+            containerName = configuration.GetSection("BlobContainerName").Value;
         }
 
         public async Task<IActionResult> Index()
@@ -38,7 +43,7 @@ namespace Lab_Binding_ASP_Azure_1.Controllers
             {
                 return View(dto);
             }
-            BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient("home");
+            BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName);
             await containerClient.CreateIfNotExistsAsync();
             await containerClient.SetAccessPolicyAsync(PublicAccessType.BlobContainer);
             string filename = $"{Path.GetFileNameWithoutExtension(dto.Photo.FileName)}" +
@@ -85,7 +90,7 @@ namespace Lab_Binding_ASP_Azure_1.Controllers
             var photo = await context.Photos.FindAsync(id);
             if(photo != null)
             {
-                BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient("home");
+                BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName);
                 BlobClient blobClient = containerClient.GetBlobClient(photo.Filename);
                 await blobClient.DeleteIfExistsAsync();
 
