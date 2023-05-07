@@ -1,1 +1,1 @@
-### Ayure bind with ASP.NET
+### Azure bind with ASP.NET
